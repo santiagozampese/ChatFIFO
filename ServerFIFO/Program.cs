@@ -135,9 +135,8 @@ public static class Program
                     try
                     {
                         using var stream = new FileStream(targetInFifo, FileMode.Open, FileAccess.Write, FileShare.ReadWrite, 4096, true);
-                        using var writer = new StreamWriter(stream, Encoding.UTF8);
+                        using var writer = new StreamWriter(stream, Encoding.UTF8) {AutoFlush = true};
                         await writer.WriteLineAsync(message);
-                        await writer.FlushAsync();
                     }
                     catch
                     {

@@ -3,7 +3,7 @@ public static class CustomRead
 {
     public static StringBuilder stringBuilder = new();
     public static List<ConsoleKey> specialKeys = new() {ConsoleKey.Enter, ConsoleKey.Backspace};
-    public static string CustomReadLine(string text = "")
+    public static string ReadLine(string text = "")
     {
         ConsoleKeyInfo keyInfo = new();
         while (keyInfo.Key != ConsoleKey.Enter)

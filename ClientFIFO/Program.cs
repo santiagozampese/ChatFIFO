@@ -69,9 +69,24 @@ public static class Program
     {
         while (true)
         {
-            var msg = await File.ReadAllTextAsync(inFifo);
-            messages.Add(msg.Trim());
-            ShowMessages();
+            try
+            {
+                using (var stream = new FileStream(inFifo, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                using (var reader = new StreamReader(stream))
+                {
+                    var msg = await reader.ReadLineAsync();
+                    if (!string.IsNullOrEmpty(msg))
+                    {
+                        messages.Add(msg.Trim());
+                        ShowMessages();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error reading from FIFO: {ex.Message}");
+                Task.Delay(1000).Wait(); // Wait for a second before retrying
+            }
         }
     }
 
@@ -80,10 +95,27 @@ public static class Program
         Console.Write($"Me ({myPid}): ");
         while (true)
         {
-            var msg = CustomRead.CustomReadLine($"Me ({myPid}): "); 
-            messages.Add($"Me ({myPid}): {msg}");
-            await File.WriteAllTextAsync(outFifo, msg);
-            ShowMessages();
+            try
+            {
+                using (var stream = new FileStream(outFifo, FileMode.Open, FileAccess.Write, FileShare.ReadWrite))
+                using (var writer = new StreamWriter(stream) {AutoFlush = true})
+                
+                while (true)
+                {
+                    var input = CustomRead.ReadLine($"Me ({myPid}): ");
+                    if (!string.IsNullOrWhiteSpace(input))
+                    {
+                        await writer.WriteLineAsync($"{input}");
+                        messages.Add($"Me ({myPid}): {input}");
+                        ShowMessages();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error writing to FIFO: {ex.Message}");
+                Task.Delay(1000).Wait(); // Wait for a second before retrying
+            }
         }
     }
 }
